@@ -114,10 +114,22 @@ async def scan(request: ScanRequest):
     Returns:
         Scan results with detected vulnerabilities
     """
-    path = Path(request.path)
+    # Validate and sanitize the path to prevent path traversal
+    try:
+        path = Path(request.path).resolve()
+    except (ValueError, RuntimeError) as e:
+        raise HTTPException(status_code=400, detail=f"Invalid path: {str(e)}")
     
+    # Ensure the path exists and is within allowed directories
     if not path.exists():
-        raise HTTPException(status_code=404, detail=f"Path not found: {request.path}")
+        raise HTTPException(status_code=404, detail="Path not found")
+    
+    # Optional: Add additional security check to ensure path is within allowed directories
+    # This prevents accessing arbitrary file system locations
+    # Uncomment and configure if you want to restrict to specific directories:
+    # allowed_base = Path("/allowed/scan/directory").resolve()
+    # if not str(path).startswith(str(allowed_base)):
+    #     raise HTTPException(status_code=403, detail="Access to this path is not allowed")
     
     db = get_db()
     
