@@ -71,12 +71,14 @@ def test_execute_read():
     """Test executing a read query"""
     with patch('insecurity_refactoring_py.db.GraphDatabase') as mock_gdb:
         mock_driver = Mock()
-        mock_session = Mock()
+        mock_session = MagicMock()
         mock_result = Mock()
         
-        # Setup mocks
+        # Setup mocks - session needs to be a MagicMock for context manager
         mock_gdb.driver.return_value = mock_driver
-        mock_driver.session.return_value.__enter__.return_value = mock_session
+        mock_driver.session = MagicMock(return_value=mock_session)
+        mock_session.__enter__ = MagicMock(return_value=mock_session)
+        mock_session.__exit__ = MagicMock(return_value=False)
         mock_session.run.return_value = mock_result
         
         # Create mock records
@@ -96,11 +98,13 @@ def test_find_node():
     """Test finding a node by ID"""
     with patch('insecurity_refactoring_py.db.GraphDatabase') as mock_gdb:
         mock_driver = Mock()
-        mock_session = Mock()
+        mock_session = MagicMock()
         mock_result = Mock()
         
         mock_gdb.driver.return_value = mock_driver
-        mock_driver.session.return_value.__enter__.return_value = mock_session
+        mock_driver.session = MagicMock(return_value=mock_session)
+        mock_session.__enter__ = MagicMock(return_value=mock_session)
+        mock_session.__exit__ = MagicMock(return_value=False)
         mock_session.run.return_value = mock_result
         
         mock_record = {'n': {'id': 123, 'name': 'test'}}
