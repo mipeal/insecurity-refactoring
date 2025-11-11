@@ -85,4 +85,99 @@ You can use it from cli to find possible injection points/vulnerabilities. Furth
 The code property graph is stored in the provided neo4j database. You can access the database for testing on following url:
 http://localhost:7474/
 
+# Python Application (NEW)
+
+A modern Python implementation of the Insecurity Refactoring tool is now available with enhanced Neo4j integration!
+
+## Quick Start with Python
+
+### Prerequisites
+- Python 3.10 or higher
+- Neo4j 5.x+ (the existing neo4j-community-3.5.13 can still be used)
+
+### Installation
+
+```bash
+# Install Python dependencies
+pip install -r requirements.txt
+
+# Or install in development mode
+pip install -e .
+```
+
+### Configuration
+
+Create a `.env` file (use `.env.example` as template):
+```bash
+cp .env.example .env
+# Edit .env with your Neo4j credentials if needed
+```
+
+### Usage
+
+#### Command Line Interface (CLI)
+
+```bash
+# Test Neo4j connection
+insecurity-cli connect-test
+
+# Scan for vulnerabilities
+insecurity-cli scan /path/to/php/code
+
+# Scan with verbose output
+insecurity-cli scan /path/to/php/code --output --verbose
+
+# Show version
+insecurity-cli version
+```
+
+#### REST API
+
+Start the API server:
+```bash
+# Option 1: Using the provided script
+./start_api.sh
+
+# Option 2: Directly with uvicorn
+uvicorn insecurity_refactoring_py.api:app --reload
+```
+
+Access the API:
+- API Root: http://localhost:8000/
+- Interactive Docs: http://localhost:8000/docs
+- Health Check: http://localhost:8000/health
+
+#### Running Tests
+
+```bash
+# Run all tests
+pytest
+
+# Run with coverage
+pytest --cov=insecurity_refactoring_py
+
+# Run specific test file
+pytest tests/test_db.py -v
+```
+
+## Python Application Features
+
+- 🐍 **Modern Python Stack**: Built with Python 3.10+ and type hints
+- 🔌 **Enhanced Neo4j Integration**: Using the latest neo4j-driver (5.x)
+- 🖥️ **CLI with Typer**: Rich terminal interface with beautiful output
+- 🌐 **FastAPI REST API**: OpenAPI/Swagger documentation included
+- ✅ **Well Tested**: Comprehensive test suite with pytest
+- 📦 **Easy Deployment**: Simple pip installation
+
+## Architecture
+
+The Python application provides:
+- `insecurity_refactoring_py/db.py` - Neo4j database layer
+- `insecurity_refactoring_py/scanner.py` - Vulnerability detection engine
+- `insecurity_refactoring_py/cli.py` - Command-line interface
+- `insecurity_refactoring_py/api.py` - REST API
+- `insecurity_refactoring_py/config.py` - Configuration management
+
+See `insecurity_refactoring_py/README.md` for detailed documentation.
+
 

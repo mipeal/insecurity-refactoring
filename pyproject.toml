@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "insecurity-refactoring"
+version = "1.0.0"
+description = "A Python tool for detecting and refactoring security vulnerabilities in PHP code using Neo4j"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "InsecurityRefactoring Team"}
+]
+dependencies = [
+    "neo4j>=5.0.0,<6.0.0",
+    "fastapi>=0.100.0",
+    "typer>=0.9.0",
+    "uvicorn[standard]>=0.23.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "python-dotenv>=1.0.0",
+    "rich>=13.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.0.0",
+    "ruff>=0.0.280",
+    "mypy>=1.4.0",
+]
+
+[project.scripts]
+insecurity-cli = "insecurity_refactoring_py.cli:app"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["insecurity_refactoring_py*"]
+
+[tool.black]
+line-length = 100
+target-version = ['py310']
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+select = ["E", "F", "I", "N", "W", "UP"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
