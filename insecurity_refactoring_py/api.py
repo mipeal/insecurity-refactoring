@@ -116,19 +116,29 @@ async def scan(request: ScanRequest):
     """
     # Validate and sanitize the path to prevent path traversal
     try:
-        path = Path(request.path).resolve()
+        # Resolve to absolute canonical path to prevent traversal attacks
+        requested_path = Path(request.path).resolve(strict=False)
     except (ValueError, RuntimeError) as e:
-        raise HTTPException(status_code=400, detail=f"Invalid path: {str(e)}")
+        raise HTTPException(status_code=400, detail="Invalid path provided")
     
-    # Ensure the path exists and is within allowed directories
-    if not path.exists():
-        raise HTTPException(status_code=404, detail="Path not found")
+    # Security: Check for path traversal attempts
+    # Ensure the resolved path doesn't contain suspicious patterns
+    path_str = str(requested_path)
+    if ".." in path_str.split("/") or path_str.startswith("/etc") or path_str.startswith("/sys"):
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Ensure the path exists
+    try:
+        if not requested_path.exists():
+            raise HTTPException(status_code=404, detail="Path not found")
+    except (OSError, PermissionError):
+        raise HTTPException(status_code=403, detail="Access denied")
     
     # Optional: Add additional security check to ensure path is within allowed directories
     # This prevents accessing arbitrary file system locations
     # Uncomment and configure if you want to restrict to specific directories:
     # allowed_base = Path("/allowed/scan/directory").resolve()
-    # if not str(path).startswith(str(allowed_base)):
+    # if not str(requested_path).startswith(str(allowed_base)):
     #     raise HTTPException(status_code=403, detail="Access to this path is not allowed")
     
     db = get_db()
@@ -137,12 +147,12 @@ async def scan(request: ScanRequest):
         scanner = VulnerabilityScanner(db)
         
         if request.prepare_db:
-            success = scanner.prepare_database(str(path))
+            success = scanner.prepare_database(str(requested_path))
             if not success:
                 raise HTTPException(status_code=500, detail="Failed to prepare database")
         
         results = scanner.scan(
-            str(path),
+            str(requested_path),
             specific_patterns=request.specific_patterns
         )
         
@@ -159,7 +169,7 @@ async def scan(request: ScanRequest):
         
         return ScanResponse(
             status="completed",
-            path=str(path),
+            path=str(requested_path),
             vulnerabilities=vulnerabilities,
             total_count=len(vulnerabilities)
         )
